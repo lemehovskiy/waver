@@ -77,8 +77,10 @@
                     }
 
 
-                    TweenMax.to(self.position, count * 2, {
+                    TweenMax.to(self.position, count, {
                         bezier: {values: bezier_values, timeResolution: 0, type: "soft"},
+                        yoyo: true,
+                        repeat: -1,
                         onUpdate: function () {
                             self.on_update();
                         }, ease: Linear.easeNone
@@ -86,8 +88,9 @@
 
 
                     if (self.settings.debug) {
-
-                        TweenMax.to(bezier_element[i], count * 2, {
+                        TweenMax.to(bezier_element[i], count, {
+                            yoyo: true,
+                            repeat: -1,
                             bezier: {timeResolution: 0, type: "soft", values: bezier_values},
                             ease: Linear.easeNone
                         });
@@ -121,11 +124,14 @@
                     waver_item.active = true;
                     waver_item.$el.addClass('active');
                 }
-                else if (waver_item.active) {
+                else if (waver_item.active && !waver_item.wait_disappear) {
+                    waver_item.wait_disappear = true;
+
                     setTimeout(function(){
                         waver_item.$el.removeClass('active');
                         waver_item.active = false;
-                    }, 10000 - waver_item.distance * (10000 / 200))
+                        waver_item.wait_disappear = false;
+                    }, 2000 - waver_item.distance * (2000 / 200))
                 }
 
             })
