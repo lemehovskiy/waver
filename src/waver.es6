@@ -68,7 +68,6 @@
                         bezier_values.push({
                             x: math_random(window_width - bezier_element_width),
                             y: math_random(window_height - bezier_element_height),
-                            scale: math_random(1),
                             zIndex: Math.round(math_random(1) * 7)
                         });
                     }
@@ -78,7 +77,7 @@
                     }
 
 
-                    TweenMax.to(self.position, count * 4, {
+                    TweenMax.to(self.position, count * 2, {
                         bezier: {values: bezier_values, timeResolution: 0, type: "soft"},
                         onUpdate: function () {
                             self.on_update();
@@ -88,7 +87,7 @@
 
                     if (self.settings.debug) {
 
-                        bezier_element[i].TweenLite = TweenMax.to(bezier_element[i], count * 4, {
+                        TweenMax.to(bezier_element[i], count * 2, {
                             bezier: {timeResolution: 0, type: "soft", values: bezier_values},
                             ease: Linear.easeNone
                         });
@@ -108,8 +107,6 @@
         on_update(){
             let self = this;
 
-            console.log(self.position.x);
-
 
             // console.log(self.waver_items_data);
             self.waver_items_data.forEach(function(waver_item){
@@ -119,8 +116,16 @@
 
                 let distance = Math.sqrt( a*a + b*b );
 
-                if (distance < 40) {
+                if (distance < 200 && !waver_item.active) {
+                    waver_item.distance = distance;
+                    waver_item.active = true;
                     waver_item.$el.addClass('active');
+                }
+                else if (waver_item.active) {
+                    setTimeout(function(){
+                        waver_item.$el.removeClass('active');
+                        waver_item.active = false;
+                    }, 10000 - waver_item.distance * (10000 / 200))
                 }
 
             })

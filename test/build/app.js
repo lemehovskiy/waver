@@ -7075,7 +7075,7 @@ __webpack_require__(111);
 
 $(document).ready(function () {
 
-    for (var i = 0; i < 345; i++) {
+    for (var i = 0; i < 790; i++) {
         $('.waver-demo').append('<div class="waver-item"></div>');
     }
 
@@ -12194,7 +12194,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                             bezier_values.push({
                                 x: math_random(window_width - bezier_element_width),
                                 y: math_random(window_height - bezier_element_height),
-                                scale: math_random(1),
                                 zIndex: Math.round(math_random(1) * 7)
                             });
                         }
@@ -12203,7 +12202,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                             bezier_element[i].TweenLite.kill();
                         }
 
-                        TweenMax.to(self.position, count * 4, {
+                        TweenMax.to(self.position, count * 2, {
                             bezier: { values: bezier_values, timeResolution: 0, type: "soft" },
                             onUpdate: function onUpdate() {
                                 self.on_update();
@@ -12212,7 +12211,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                         if (self.settings.debug) {
 
-                            bezier_element[i].TweenLite = TweenMax.to(bezier_element[i], count * 4, {
+                            TweenMax.to(bezier_element[i], count * 2, {
                                 bezier: { timeResolution: 0, type: "soft", values: bezier_values },
                                 ease: Linear.easeNone
                             });
@@ -12232,8 +12231,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function on_update() {
                 var self = this;
 
-                console.log(self.position.x);
-
                 // console.log(self.waver_items_data);
                 self.waver_items_data.forEach(function (waver_item) {
 
@@ -12242,8 +12239,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                     var distance = Math.sqrt(a * a + b * b);
 
-                    if (distance < 40) {
+                    if (distance < 200 && !waver_item.active) {
+                        waver_item.distance = distance;
+                        waver_item.active = true;
                         waver_item.$el.addClass('active');
+                    } else if (waver_item.active) {
+                        setTimeout(function () {
+                            waver_item.$el.removeClass('active');
+                            waver_item.active = false;
+                        }, 10000 - waver_item.distance * (10000 / 200));
                     }
                 });
             }
