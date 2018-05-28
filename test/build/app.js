@@ -12240,9 +12240,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     var a = waver_item.x - self.position.x;
                     var b = waver_item.y - self.position.y;
 
-                    var c = Math.sqrt(a * a + b * b);
+                    var distance = Math.sqrt(a * a + b * b);
 
-                    if (c < 10) {
+                    if (distance < 40) {
                         waver_item.$el.addClass('active');
                     }
                 });

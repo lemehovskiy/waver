@@ -117,9 +117,9 @@
                 let a = waver_item.x - self.position.x;
                 let b = waver_item.y - self.position.y;
 
-                let c = Math.sqrt( a*a + b*b );
+                let distance = Math.sqrt( a*a + b*b );
 
-                if (c < 10) {
+                if (distance < 40) {
                     waver_item.$el.addClass('active');
                 }
 
