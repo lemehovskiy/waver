@@ -1,0 +1,20 @@
+{
+    "project_name": "waver",
+    "project_class": "Waver",
+    "jquery_function_name": "waver",
+    "project_name_underscore": "waver",
+    "project_name_dashed": "waver",
+    "plugin_type": "default",
+    "project_description": "jQuery plugin",
+    "project_keywords": [
+        "jQuery",
+        "plugin"
+    ],
+    "gitignore": [
+        ".idea",
+        "**\/node_modules",
+        "**\/DS_Store"
+    ],
+    "author": "lemehovskiy",
+    "github_url": "https:\/\/github.com\/lemehovskiy"
+}
