@@ -119,8 +119,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
             self.$waver_items = self.$element.find('.waver-item');
 
-            self.positions = [];
-
             self.waves = [];
 
             self.init();
@@ -159,7 +157,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                     self.waves.push({
                         bezier_values: bezier_values,
-                        position: {
+                        current_position: {
                             x: self.math_random(self.$element.innerWidth()),
                             y: self.math_random(self.$element.innerHeight())
                         }
@@ -173,12 +171,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                 self.waves.forEach(function (wave, index) {
 
-                    TweenMax.to(wave.position, self.settings.bezier_path_length, {
+                    TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
                         bezier: { values: wave.bezier_values, timeResolution: 0, type: "soft" },
                         yoyo: true,
                         repeat: -1,
                         onUpdate: function onUpdate() {
-                            self.on_update(wave.position);
+                            self.on_update(wave.current_position);
                         }, ease: Linear.easeNone
                     });
                 });
@@ -193,7 +191,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function on_update(position) {
                 var self = this;
 
-                // console.log(self.waver_items_data);
                 self.waver_items_data.forEach(function (waver_item) {
 
                     var a = waver_item.x - position.x;
@@ -241,9 +238,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                 self.waves.forEach(function (wave, index) {
 
-                    console.log(wave);
-
-                    TweenLite.set(wave.$debug_point, { x: wave.position.x, y: wave.position.y });
+                    TweenLite.set(wave.$debug_point, { x: wave.current_position.x, y: wave.current_position.y });
                 });
             }
         }, {
