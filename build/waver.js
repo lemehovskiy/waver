@@ -129,6 +129,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function init() {
                 var self = this;
 
+                self.store_waver_items();
                 self.set_waver_items_position();
 
                 self.generate_waves();
@@ -138,6 +139,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 if (self.settings.debug) {
                     self.init_debug();
                 }
+
+                self.resize_handler();
             }
         }, {
             key: 'generate_waves',
@@ -182,6 +185,19 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 });
             }
         }, {
+            key: 'resize_handler',
+            value: function resize_handler() {
+
+                $(window).resize(function () {
+                    if (this.resizeTO) clearTimeout(this.resizeTO);
+                    this.resizeTO = setTimeout(function () {
+                        $(this).trigger('resize_end');
+                    }, 500);
+                });
+
+                $(window).on('resize_end', function () {});
+            }
+        }, {
             key: 'math_random',
             value: function math_random(X) {
                 return Math.random() * X;
@@ -218,17 +234,25 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 }
             }
         }, {
-            key: 'set_waver_items_position',
-            value: function set_waver_items_position() {
+            key: 'store_waver_items',
+            value: function store_waver_items() {
                 var self = this;
 
                 self.$waver_items.each(function () {
 
                     self.waver_items_data.push({
-                        $el: $(this),
-                        x: $(this).position().left + $(this).outerWidth() / 2,
-                        y: $(this).position().top + $(this).outerHeight() / 2
+                        $el: $(this)
                     });
+                });
+            }
+        }, {
+            key: 'set_waver_items_position',
+            value: function set_waver_items_position() {
+                var self = this;
+
+                self.waver_items_data.forEach(function (item) {
+                    item.x = item.$el.position().left + item.$el.outerWidth() / 2;
+                    item.y = item.$el.position().top + item.$el.outerHeight() / 2;
                 });
             }
         }, {

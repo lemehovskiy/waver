@@ -44,6 +44,7 @@
             let self = this;
 
 
+            self.store_waver_items();
             self.set_waver_items_position();
 
             self.generate_waves();
@@ -53,6 +54,8 @@
             if (self.settings.debug) {
                 self.init_debug();
             }
+
+            self.resize_handler();
 
         }
 
@@ -99,6 +102,20 @@
             })
         }
 
+        resize_handler() {
+
+            $(window).resize(function () {
+                if (this.resizeTO) clearTimeout(this.resizeTO);
+                this.resizeTO = setTimeout(function () {
+                    $(this).trigger('resize_end');
+                }, 500);
+            });
+
+            $(window).on('resize_end', function () {
+
+            })
+        }
+
         math_random(X) {
             return Math.random() * X
         }
@@ -136,18 +153,25 @@
         }
 
 
-        set_waver_items_position() {
+        store_waver_items() {
             let self = this;
 
             self.$waver_items.each(function () {
 
                 self.waver_items_data.push(
                     {
-                        $el: $(this),
-                        x: $(this).position().left + $(this).outerWidth() / 2,
-                        y: $(this).position().top + $(this).outerHeight() / 2
+                        $el: $(this)
                     }
                 );
+            })
+        }
+
+        set_waver_items_position() {
+            let self = this;
+
+            self.waver_items_data.forEach(function (item) {
+                item.x = item.$el.position().left + item.$el.outerWidth() / 2;
+                item.y = item.$el.position().top + item.$el.outerHeight() / 2;
             })
 
         }
