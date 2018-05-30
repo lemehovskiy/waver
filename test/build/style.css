@@ -207,12 +207,18 @@ section {
   background: rgba(0, 0, 0, 0.15);
 }
 
+.section-intro .container {
+  max-width: 1000px;
+}
+
 .section-intro .waver-demo {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+  background: rgba(186, 186, 186, 0.42);
+  position: relative;
 }
 
 .section-intro .waver-item {

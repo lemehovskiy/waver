@@ -18,8 +18,8 @@
             //extend by function call
             self.settings = $.extend(true, {
                 debug: false,
-                waves_num: 2,
-                bezier_path_length: 40,
+                waves_num: 1,
+                bezier_path_length: 2,
                 distance: 100
 
             }, options);
@@ -144,8 +144,8 @@
                 self.waver_items_data.push(
                     {
                         $el: $(this),
-                        x: $(this).offset().left + $(this).outerWidth() / 2,
-                        y: $(this).offset().top + $(this).outerHeight() / 2,
+                        x: $(this).position().left + $(this).outerWidth() / 2,
+                        y: $(this).position().top + $(this).outerHeight() / 2
                     }
                 );
             })
