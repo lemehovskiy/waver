@@ -17,8 +17,10 @@
 
             //extend by function call
             self.settings = $.extend(true, {
-
-                debug: true
+                debug: false,
+                waves_num: 2,
+                bezier_path_length: 40,
+                distance: 100
 
             }, options);
 
@@ -32,7 +34,9 @@
 
             self.$waver_items = self.$element.find('.waver-item');
 
-            self.position = {x: 0, y: 0, rotation: 0};
+            self.positions = [];
+
+            self.waves = [];
 
             self.init();
 
@@ -44,82 +48,75 @@
 
             self.set_waver_items_position();
 
+            self.generate_waves();
 
-            var math_random = function (X) {
-                    return Math.random() * X
-                },
-                bezier_element = document.querySelectorAll('.GSAP');
+            self.run();
 
-            function BTweens() {
-                var window_width = window.innerWidth,
-                    window_height = window.innerHeight,
-                    count = 40;
-
-                TweenLite.killDelayedCallsTo(BTweens);
-                TweenLite.delayedCall(count * 4, BTweens);
-
-                for (var i = bezier_element.length; i--;) {
-                    var c = count,
-                        bezier_values = [],
-                        bezier_element_width = bezier_element[i].offsetWidth,
-                        bezier_element_height = bezier_element[i].offsetHeight;
-
-                    while (c--) {
-                        bezier_values.push({
-                            x: math_random(window_width - bezier_element_width),
-                            y: math_random(window_height - bezier_element_height),
-                            zIndex: Math.round(math_random(1) * 7)
-                        });
-                    }
-
-                    if (bezier_element[i].TweenLite) {
-                        bezier_element[i].TweenLite.kill()
-                    }
-
-
-                    TweenMax.to(self.position, count, {
-                        bezier: {values: bezier_values, timeResolution: 0, type: "soft"},
-                        yoyo: true,
-                        repeat: -1,
-                        onUpdate: function () {
-                            self.on_update();
-                        }, ease: Linear.easeNone
-                    });
-
-
-                    if (self.settings.debug) {
-                        TweenMax.to(bezier_element[i], count, {
-                            yoyo: true,
-                            repeat: -1,
-                            bezier: {timeResolution: 0, type: "soft", values: bezier_values},
-                            ease: Linear.easeNone
-                        });
-                    }
-                }
+            if (self.settings.debug) {
+                self.init_debug();
             }
-
-            BTweens();
-
-            window.onresize = function () {
-                TweenLite.killDelayedCallsTo(BTweens);
-                TweenLite.delayedCall(0.4, BTweens);
-            };
 
         }
 
-        on_update(){
+        generate_waves() {
             let self = this;
 
 
+            for (let i = 0; i < self.settings.waves_num; i++) {
+
+                let bezier_values = [];
+
+                for (let i = 0; i < self.settings.bezier_path_length; i++) {
+                    bezier_values.push({
+                        x: self.math_random(self.$element.innerWidth()),
+                        y: self.math_random(self.$element.innerHeight())
+                    });
+                }
+
+                self.waves.push({
+                    bezier_values: bezier_values,
+                    position: {
+                        x: self.math_random(self.$element.innerWidth()),
+                        y: self.math_random(self.$element.innerHeight())
+                    }
+                })
+
+            }
+
+        }
+
+        run() {
+            let self = this;
+
+            self.waves.forEach(function (wave, index) {
+
+                TweenMax.to(wave.position, self.settings.bezier_path_length, {
+                    bezier: {values: wave.bezier_values, timeResolution: 0, type: "soft"},
+                    yoyo: true,
+                    repeat: -1,
+                    onUpdate: function () {
+                        self.on_update(wave.position);
+                    }, ease: Linear.easeNone
+                });
+            })
+        }
+
+        math_random(X) {
+            return Math.random() * X
+        }
+
+        on_update(position) {
+            let self = this;
+
             // console.log(self.waver_items_data);
-            self.waver_items_data.forEach(function(waver_item){
+            self.waver_items_data.forEach(function (waver_item) {
 
-                let a = waver_item.x - self.position.x;
-                let b = waver_item.y - self.position.y;
+                let a = waver_item.x - position.x;
+                let b = waver_item.y - position.y;
 
-                let distance = Math.sqrt( a*a + b*b );
+                let distance = Math.sqrt(a * a + b * b);
 
-                if (distance < 200 && !waver_item.active) {
+                if (distance < self.settings.distance && !waver_item.active) {
                     waver_item.distance = distance;
                     waver_item.active = true;
                     waver_item.$el.addClass('active');
@@ -127,14 +124,17 @@
                 else if (waver_item.active && !waver_item.wait_disappear) {
                     waver_item.wait_disappear = true;
 
-                    setTimeout(function(){
+                    setTimeout(function () {
                         waver_item.$el.removeClass('active');
                         waver_item.active = false;
                         waver_item.wait_disappear = false;
-                    }, 2000 - waver_item.distance * (2000 / 200))
+                    }, 2000 - waver_item.distance * (2000 / self.settings.distance))
                 }
-
             })
+
+            if (self.settings.debug) {
+                self.update_debug_point();
+            }
 
         }
 
@@ -153,6 +153,38 @@
                 );
             })
 
+        }
+
+        update_debug_point() {
+            let self = this;
+
+            self.waves.forEach(function (wave, index) {
+
+                console.log(wave);
+
+                TweenLite.set(wave.$debug_point, {x: wave.position.x, y: wave.position.y})
+
+            })
+        }
+
+        init_debug() {
+            let self = this;
+
+            self.waves.forEach(function (wave, index) {
+                wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
+
+                self.$element.append(wave.$debug_point);
+            })
+
+
+            //self let example
+            // console.log('self let example');
+            // console.log(this);
+            //
+            // setTimeout(function(){
+            //     console.log(this);
+            //     console.log(self);
+            // }, 1000)
         }
     }
 

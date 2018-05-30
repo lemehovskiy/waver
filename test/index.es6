@@ -12,6 +12,10 @@ $(document).ready(function () {
         $('.waver-demo').append('<div class="waver-item"></div>')
     }
 
-    $('.waver-demo').waver();
+    $('.waver-demo').waver({
+        distance: 200,
+        debug: true
+
+    });
 
 });
