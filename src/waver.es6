@@ -35,6 +35,18 @@
             self.$waver_items = self.$element.find('.waver-item');
 
             self.waves = [];
+            // self.waves.length = self.settings.waves_num;
+            for (let i = 0; i < self.settings.waves_num; i++) {
+                let bezier_values = [];
+                for (let j = 0; j < self.settings.bezier_path_length; j++) {
+                    bezier_values.push({x:0, y:0})
+                }
+                let wave = {bezier_values: bezier_values, current_position: {x:0, y:0}};
+                self.waves.push(wave);
+            }
+            // let bezier_values = [];
+            // bezier_values.length = self.settings.bezier_path_length;
+            // self.waves.fill(bezier_values);
 
             self.init();
 
@@ -62,25 +74,35 @@
         generate_waves() {
             let self = this;
 
+            // self.waves.splice(0, self.waves.length);
 
             for (let i = 0; i < self.settings.waves_num; i++) {
 
-                let bezier_values = [];
+                // let bezier_values = [];
 
-                for (let i = 0; i < self.settings.bezier_path_length; i++) {
-                    bezier_values.push({
-                        x: self.math_random(self.$element.innerWidth()),
-                        y: self.math_random(self.$element.innerHeight())
-                    });
+                // let bezier_values = self.waves[i]
+                // for (let i = 0; i < self.settings.bezier_path_length; i++) {
+                for (let j = 0; j < self.settings.bezier_path_length; j++) {
+                    // bezier_values.push({
+                    //     x: self.math_random(self.$element.innerWidth()),
+                    //     y: self.math_random(self.$element.innerHeight())
+                    // });
+                    self.waves[i].bezier_values[j].x = self.math_random(self.$element.innerWidth());
+                    self.waves[i].bezier_values[j].y = self.math_random(self.$element.innerHeight());
+
+
                 }
 
-                self.waves.push({
-                    bezier_values: bezier_values,
-                    current_position: {
-                        x: self.math_random(self.$element.innerWidth()),
-                        y: self.math_random(self.$element.innerHeight())
-                    }
-                })
+                // self.waves[i] = {
+                //     bezier_values: bezier_values,
+                //     current_position: {
+                //         x: self.math_random(self.$element.innerWidth()),
+                //         y: self.math_random(self.$element.innerHeight())
+                //     }
+                // };
+
+                self.waves[i].current_position.x = self.math_random(self.$element.innerWidth());
+                self.waves[i].current_position.y = self.math_random(self.$element.innerHeight());
 
             }
 
@@ -103,6 +125,7 @@
         }
 
         resize_handler() {
+            let self = this;
 
             $(window).resize(function () {
                 if (this.resizeTO) clearTimeout(this.resizeTO);
@@ -112,7 +135,8 @@
             });
 
             $(window).on('resize_end', function () {
-
+                self.generate_waves();
+                self.set_waver_items_position();
             })
         }
 
@@ -144,7 +168,7 @@
                         waver_item.wait_disappear = false;
                     }, 2000 - waver_item.distance * (2000 / self.settings.distance))
                 }
-            })
+            });
 
             if (self.settings.debug) {
                 self.update_debug_point();
@@ -179,9 +203,10 @@
         update_debug_point() {
             let self = this;
 
-            self.waves.forEach(function (wave, index) {
+            this.waves.forEach(function (wave, index) {
 
                 TweenLite.set(wave.$debug_point, {x: wave.current_position.x, y: wave.current_position.y})
+                // wave.$debug_point.css({'x': wave.current_position.x, 'y': wave.current_position.y});
 
             })
         }
@@ -189,7 +214,7 @@
         init_debug() {
             let self = this;
 
-            self.waves.forEach(function (wave, index) {
+            this.waves.forEach(function (wave, index) {
                 wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
 
                 self.$element.append(wave.$debug_point);

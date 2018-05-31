@@ -120,6 +120,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             self.$waver_items = self.$element.find('.waver-item');
 
             self.waves = [];
+            // self.waves.length = self.settings.waves_num;
+            for (var i = 0; i < self.settings.waves_num; i++) {
+                var bezier_values = [];
+                for (var j = 0; j < self.settings.bezier_path_length; j++) {
+                    bezier_values.push({ x: 0, y: 0 });
+                }
+                var wave = { bezier_values: bezier_values, current_position: { x: 0, y: 0 } };
+                self.waves.push(wave);
+            }
+            // let bezier_values = [];
+            // bezier_values.length = self.settings.bezier_path_length;
+            // self.waves.fill(bezier_values);
 
             self.init();
         }
@@ -147,24 +159,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function generate_waves() {
                 var self = this;
 
+                // self.waves.splice(0, self.waves.length);
+
                 for (var i = 0; i < self.settings.waves_num; i++) {
 
-                    var bezier_values = [];
+                    // let bezier_values = [];
 
-                    for (var _i = 0; _i < self.settings.bezier_path_length; _i++) {
-                        bezier_values.push({
-                            x: self.math_random(self.$element.innerWidth()),
-                            y: self.math_random(self.$element.innerHeight())
-                        });
+                    // let bezier_values = self.waves[i]
+                    // for (let i = 0; i < self.settings.bezier_path_length; i++) {
+                    for (var j = 0; j < self.settings.bezier_path_length; j++) {
+                        // bezier_values.push({
+                        //     x: self.math_random(self.$element.innerWidth()),
+                        //     y: self.math_random(self.$element.innerHeight())
+                        // });
+                        self.waves[i].bezier_values[j].x = self.math_random(self.$element.innerWidth());
+                        self.waves[i].bezier_values[j].y = self.math_random(self.$element.innerHeight());
                     }
 
-                    self.waves.push({
-                        bezier_values: bezier_values,
-                        current_position: {
-                            x: self.math_random(self.$element.innerWidth()),
-                            y: self.math_random(self.$element.innerHeight())
-                        }
-                    });
+                    // self.waves[i] = {
+                    //     bezier_values: bezier_values,
+                    //     current_position: {
+                    //         x: self.math_random(self.$element.innerWidth()),
+                    //         y: self.math_random(self.$element.innerHeight())
+                    //     }
+                    // };
+
+                    self.waves[i].current_position.x = self.math_random(self.$element.innerWidth());
+                    self.waves[i].current_position.y = self.math_random(self.$element.innerHeight());
                 }
             }
         }, {
@@ -187,6 +208,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         }, {
             key: 'resize_handler',
             value: function resize_handler() {
+                var self = this;
 
                 $(window).resize(function () {
                     if (this.resizeTO) clearTimeout(this.resizeTO);
@@ -195,7 +217,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     }, 500);
                 });
 
-                $(window).on('resize_end', function () {});
+                $(window).on('resize_end', function () {
+                    self.generate_waves();
+                    self.set_waver_items_position();
+                });
             }
         }, {
             key: 'math_random',
@@ -260,9 +285,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function update_debug_point() {
                 var self = this;
 
-                self.waves.forEach(function (wave, index) {
+                this.waves.forEach(function (wave, index) {
 
                     TweenLite.set(wave.$debug_point, { x: wave.current_position.x, y: wave.current_position.y });
+                    // wave.$debug_point.css({'x': wave.current_position.x, 'y': wave.current_position.y});
                 });
             }
         }, {
@@ -270,7 +296,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function init_debug() {
                 var self = this;
 
-                self.waves.forEach(function (wave, index) {
+                this.waves.forEach(function (wave, index) {
                     wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
 
                     self.$element.append(wave.$debug_point);
