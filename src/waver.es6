@@ -18,7 +18,7 @@
             //extend by function call
             self.settings = $.extend(true, {
                 debug: false,
-                waves_num: 1,
+                waves_num: 2,
                 bezier_path_length: 2,
                 distance: 100,
                 bezierControlPointDistanceMin: 200
@@ -128,11 +128,11 @@
 
             self.waves.forEach(function (wave, index) {
 
-                if (typeof self.tweenComet !== 'undefined' /*&& self.tweenComet.isActive()*/) {
-                    self.tweenComet.kill();
+                if (typeof wave.tweenComet !== 'undefined' /*&& self.tweenComet.isActive()*/) {
+                    wave.tweenComet.kill();
                 }
 
-                self.tweenComet = TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
+                wave.tweenComet = TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
                     bezier: {values: wave.bezier_values, timeResolution: 0, type: "soft"},
                     yoyo: true,
                     repeat: -1,
