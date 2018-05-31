@@ -12,140 +12,137 @@
     class Waver {
 
         constructor(element, options) {
-
-            let self = this;
-
             //extend by function call
-            self.settings = $.extend(true, {
-                debug: false,
+            this.settings = $.extend(true, {
+                debug: true,
                 waves_num: 2,
-                bezier_path_length: 2,
+                bezier_path_length: 20,
                 distance: 100,
-                bezierControlPointDistanceMin: 200
+                bezier_control_point_distance_min: 200
             }, options);
 
-            self.$element = $(element);
+            this.$element = $(element);
 
             //extend by data options
-            self.data_options = self.$element.data('waver');
-            self.settings = $.extend(true, self.settings, self.data_options);
+            this.data_options = this.$element.data('waver');
+            this.settings = $.extend(true, this.settings, this.data_options);
 
-            self.waver_items_data = [];
+            this.items = this.get_items(this.$element.find('.waver-item'));
+            this.waves = this.get_waves();
 
-            self.$waver_items = self.$element.find('.waver-item');
+            this.init();
+        }
 
-            self.waves = [];
-            // self.waves.length = self.settings.waves_num;
-            for (let i = 0; i < self.settings.waves_num; i++) {
-                let bezier_values = [];
-                for (let j = 0; j < self.settings.bezier_path_length; j++) {
-                    bezier_values.push({x:0, y:0})
+        get_items($elements) {
+            let items = [];
+            $elements.each(function() {
+                let item = {};
+                item.$el = $(this);
+                items.push(item);
+            });
+            return items;
+        }
+
+        update_items() {
+            this.items.forEach(function (item) {
+                item.x = item.$el.position().left + item.$el.outerWidth() / 2;
+                item.y = item.$el.position().top + item.$el.outerHeight() / 2;
+            });
+        }
+
+        on_update(position) {
+            this.items.forEach(function (item) {
+
+                let distance = this.get_distance(item.x, item.y, position.x, position.y);
+
+                if (distance < this.settings.distance && !item.active) {
+                    item.distance = distance;
+                    item.active = true;
+                    item.$el.addClass('active');
+                } else if (item.active && !item.wait_disappear) {
+                    item.wait_disappear = true;
+
+                    setTimeout(function () {
+                        item.$el.removeClass('active');
+                        item.active = false;
+                        item.wait_disappear = false;
+                    }, 2000 - item.distance * (2000 / this.settings.distance))
                 }
-                let wave = {bezier_values: bezier_values, current_position: {x:0, y:0}};
-                self.waves.push(wave);
+            }.bind(this));
+
+            if (this.settings.debug) {
+                this.update_debug_point();
             }
-            // let bezier_values = [];
-            // bezier_values.length = self.settings.bezier_path_length;
-            // self.waves.fill(bezier_values);
-
-            self.init();
-
         }
 
         init() {
-            let self = this;
-
-
-            self.store_waver_items();
-            self.set_waver_items_position();
-
-            self.generate_waves();
-
-            self.run();
-
-            if (self.settings.debug) {
-                self.init_debug();
+            this.run();
+            if (this.settings.debug) {
+                this.init_debug();
             }
-
-            self.resize_handler();
-
+            this.resize_handler();
         }
 
-        getDistance(x1, y1, x2, y2) {
+        get_waves() {
+            let waves = [];
+            for (let i = 0; i < this.settings.waves_num; i++) {
+                let bezier_values = [];
+                for (let j = 0; j < this.settings.bezier_path_length; j++) {
+                    bezier_values.push({x:0, y:0})
+                }
+                let wave = {bezier_values: bezier_values, current_position: {x:0, y:0}};
+                waves.push(wave);
+            }
+            return waves;
+        }
+
+        static get_distance(x1, y1, x2, y2) {
             return Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
         }
 
-        generate_waves() {
-            let self = this;
-
-            // self.waves.splice(0, self.waves.length);
-
-            for (let i = 0; i < self.settings.waves_num; i++) {
-
-                // let bezier_values = [];
-
-                // let bezier_values = self.waves[i]
-                // for (let i = 0; i < self.settings.bezier_path_length; i++) {
-                for (let j = 0; j < self.settings.bezier_path_length; j++) {
-                    // bezier_values.push({
-                    //     x: self.math_random(self.$element.innerWidth()),
-                    //     y: self.math_random(self.$element.innerHeight())
-                    // });
-                    let distanceMin = this.settings.bezierControlPointDistanceMin;
-                    let x = self.math_random(self.$element.innerWidth());
-                    let y = self.math_random(self.$element.innerHeight());
-                    if (j > 0) {
-                        x = self.math_random(self.$element.innerWidth() - 2 * distanceMin);
-                        y = self.math_random(self.$element.innerHeight() - 2 * distanceMin);
-                        if (x > self.waves[i].bezier_values[j - 1].x - distanceMin) {
-                            x = x + 2 * distanceMin;
+        update_waves() {
+            for (let wave_index = 0; wave_index < this.settings.waves_num; wave_index++) {
+                for (let bezier_index = 0; bezier_index < this.settings.bezier_path_length; bezier_index++) {
+                    let x, y;
+                    let attempt_count = 0;
+                    let distance;
+                    do {
+                        x = this.math_random(this.$element.innerWidth());
+                        y = this.math_random(this.$element.innerHeight());
+                        if (bezier_index === 0) break;
+                        let prev = this.waves[wave_index].bezier_values[bezier_index - 1];
+                        distance = this.get_distance(x, y, prev.x, prev.y);
+                        if (this.settings.debug && attempt_count === 9) {
+                            console.log('9 attempts to find appropriate coords');
                         }
-                        if (y > self.waves[i].bezier_values[j - 1].y - distanceMin) {
-                            y = y + 2 * distanceMin;
-                        }
-                    }
-                    self.waves[i].bezier_values[j].x = x;
-                    self.waves[i].bezier_values[j].y = y;
+                    } while (++attempt_count < 10 && distance < this.settings.bezier_control_point_distance_min) ;
+                    this.waves[wave_index].bezier_values[bezier_index].x = x;
+                    this.waves[wave_index].bezier_values[bezier_index].y = y;
                 }
-
-                // self.waves[i] = {
-                //     bezier_values: bezier_values,
-                //     current_position: {
-                //         x: self.math_random(self.$element.innerWidth()),
-                //         y: self.math_random(self.$element.innerHeight())
-                //     }
-                // };
-
-                self.waves[i].current_position.x = self.math_random(self.$element.innerWidth());
-                self.waves[i].current_position.y = self.math_random(self.$element.innerHeight());
-
             }
-
         }
 
         run() {
-            let self = this;
+            this.update_waves();
+            this.update_items();
+            this.run_tween();
+        }
 
-            self.waves.forEach(function (wave, index) {
-
-                if (typeof wave.tweenComet !== 'undefined' /*&& self.tweenComet.isActive()*/) {
-                    wave.tweenComet.kill();
-                }
-
-                wave.tweenComet = TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
+        run_tween() {
+            this.waves.forEach(function(wave) {
+                wave.tween_comet = TweenMax.to(wave.current_position, this.settings.bezier_path_length, {
                     bezier: {values: wave.bezier_values, timeResolution: 0, type: "soft"},
                     yoyo: true,
                     repeat: -1,
                     onUpdate: function () {
-                        self.on_update(wave.current_position);
-                    }, ease: Linear.easeNone
+                        this.on_update(wave.current_position);
+                    }.bind(this),
+                    ease: Linear.easeNone
                 });
-            })
+            }.bind(this));
         }
 
         resize_handler() {
-            let self = this;
-
             $(window).resize(function () {
                 if (this.resizeTO) clearTimeout(this.resizeTO);
                 this.resizeTO = setTimeout(function () {
@@ -154,104 +151,28 @@
             });
 
             $(window).on('resize_end', function () {
-                self.generate_waves();
-                self.set_waver_items_position();
-                self.run();
-            })
+                this.run();
+            }.bind(this))
         }
 
-        math_random(X) {
+        static math_random(X) {
             return Math.random() * X
         }
 
-        on_update(position) {
-            let self = this;
-
-            self.waver_items_data.forEach(function (waver_item) {
-
-                let a = waver_item.x - position.x;
-                let b = waver_item.y - position.y;
-
-                let distance = Math.sqrt(a * a + b * b);
-
-                if (distance < self.settings.distance && !waver_item.active) {
-                    waver_item.distance = distance;
-                    waver_item.active = true;
-                    waver_item.$el.addClass('active');
-                }
-                else if (waver_item.active && !waver_item.wait_disappear) {
-                    waver_item.wait_disappear = true;
-
-                    setTimeout(function () {
-                        waver_item.$el.removeClass('active');
-                        waver_item.active = false;
-                        waver_item.wait_disappear = false;
-                    }, 2000 - waver_item.distance * (2000 / self.settings.distance))
-                }
-            });
-
-            if (self.settings.debug) {
-                self.update_debug_point();
-            }
-
-        }
-
-
-        store_waver_items() {
-            let self = this;
-
-            self.$waver_items.each(function () {
-
-                self.waver_items_data.push(
-                    {
-                        $el: $(this)
-                    }
-                );
-            })
-        }
-
-        set_waver_items_position() {
-            let self = this;
-
-            self.waver_items_data.forEach(function (item) {
-                item.x = item.$el.position().left + item.$el.outerWidth() / 2;
-                item.y = item.$el.position().top + item.$el.outerHeight() / 2;
-            })
-
-        }
-
         update_debug_point() {
-            let self = this;
-
-            this.waves.forEach(function (wave, index) {
-
+            this.waves.forEach(function (wave) {
                 TweenLite.set(wave.$debug_point, {x: wave.current_position.x, y: wave.current_position.y})
-                // wave.$debug_point.css({'x': wave.current_position.x, 'y': wave.current_position.y});
-
             })
         }
 
         init_debug() {
             let self = this;
-
             this.waves.forEach(function (wave, index) {
                 wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
-
                 self.$element.append(wave.$debug_point);
             })
-
-
-            //self let example
-            // console.log('self let example');
-            // console.log(this);
-            //
-            // setTimeout(function(){
-            //     console.log(this);
-            //     console.log(self);
-            // }, 1000)
         }
     }
-
 
     $.fn.waver = function () {
         let $this = this,
@@ -261,11 +182,11 @@
             i,
             ret;
         for (i = 0; i < length; i++) {
-            if (typeof opt == 'object' || typeof opt == 'undefined')
+            if (typeof opt === 'object' || typeof opt === 'undefined')
                 $this[i].waver = new Waver($this[i], opt);
             else
                 ret = $this[i].waver[opt].apply($this[i].waver, args);
-            if (typeof ret != 'undefined') return ret;
+            if (typeof ret !== 'undefined') return ret;
         }
         return $this;
     };

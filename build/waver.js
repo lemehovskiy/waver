@@ -98,140 +98,144 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         function Waver(element, options) {
             _classCallCheck(this, Waver);
 
-            var self = this;
-
             //extend by function call
-            self.settings = $.extend(true, {
-                debug: false,
+            this.settings = $.extend(true, {
+                debug: true,
                 waves_num: 2,
-                bezier_path_length: 2,
+                bezier_path_length: 20,
                 distance: 100,
-                bezierControlPointDistanceMin: 200
+                bezier_control_point_distance_min: 200
             }, options);
 
-            self.$element = $(element);
+            this.$element = $(element);
 
             //extend by data options
-            self.data_options = self.$element.data('waver');
-            self.settings = $.extend(true, self.settings, self.data_options);
+            this.data_options = this.$element.data('waver');
+            this.settings = $.extend(true, this.settings, this.data_options);
 
-            self.waver_items_data = [];
+            this.items = this.get_items(this.$element.find('.waver-item'));
+            this.waves = this.get_waves();
 
-            self.$waver_items = self.$element.find('.waver-item');
-
-            self.waves = [];
-            // self.waves.length = self.settings.waves_num;
-            for (var i = 0; i < self.settings.waves_num; i++) {
-                var bezier_values = [];
-                for (var j = 0; j < self.settings.bezier_path_length; j++) {
-                    bezier_values.push({ x: 0, y: 0 });
-                }
-                var wave = { bezier_values: bezier_values, current_position: { x: 0, y: 0 } };
-                self.waves.push(wave);
-            }
-            // let bezier_values = [];
-            // bezier_values.length = self.settings.bezier_path_length;
-            // self.waves.fill(bezier_values);
-
-            self.init();
+            this.init();
         }
 
         _createClass(Waver, [{
+            key: 'get_items',
+            value: function get_items($elements) {
+                var items = [];
+                $elements.each(function () {
+                    var item = {};
+                    item.$el = $(this);
+                    items.push(item);
+                });
+                return items;
+            }
+        }, {
+            key: 'update_items',
+            value: function update_items() {
+                this.items.forEach(function (item) {
+                    item.x = item.$el.position().left + item.$el.outerWidth() / 2;
+                    item.y = item.$el.position().top + item.$el.outerHeight() / 2;
+                });
+            }
+        }, {
+            key: 'on_update',
+            value: function on_update(position) {
+                this.items.forEach(function (item) {
+
+                    var distance = this.get_distance(item.x, item.y, position.x, position.y);
+
+                    if (distance < this.settings.distance && !item.active) {
+                        item.distance = distance;
+                        item.active = true;
+                        item.$el.addClass('active');
+                    } else if (item.active && !item.wait_disappear) {
+                        item.wait_disappear = true;
+
+                        setTimeout(function () {
+                            item.$el.removeClass('active');
+                            item.active = false;
+                            item.wait_disappear = false;
+                        }, 2000 - item.distance * (2000 / this.settings.distance));
+                    }
+                }.bind(this));
+
+                if (this.settings.debug) {
+                    this.update_debug_point();
+                }
+            }
+        }, {
             key: 'init',
             value: function init() {
-                var self = this;
-
-                self.store_waver_items();
-                self.set_waver_items_position();
-
-                self.generate_waves();
-
-                self.run();
-
-                if (self.settings.debug) {
-                    self.init_debug();
+                this.run();
+                if (this.settings.debug) {
+                    this.init_debug();
                 }
-
-                self.resize_handler();
+                this.resize_handler();
             }
         }, {
-            key: 'getDistance',
-            value: function getDistance(x1, y1, x2, y2) {
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-            }
-        }, {
-            key: 'generate_waves',
-            value: function generate_waves() {
-                var self = this;
-
-                // self.waves.splice(0, self.waves.length);
-
-                for (var i = 0; i < self.settings.waves_num; i++) {
-
-                    // let bezier_values = [];
-
-                    // let bezier_values = self.waves[i]
-                    // for (let i = 0; i < self.settings.bezier_path_length; i++) {
-                    for (var j = 0; j < self.settings.bezier_path_length; j++) {
-                        // bezier_values.push({
-                        //     x: self.math_random(self.$element.innerWidth()),
-                        //     y: self.math_random(self.$element.innerHeight())
-                        // });
-                        var distanceMin = this.settings.bezierControlPointDistanceMin;
-                        var x = self.math_random(self.$element.innerWidth());
-                        var y = self.math_random(self.$element.innerHeight());
-                        if (j > 0) {
-                            x = self.math_random(self.$element.innerWidth() - 2 * distanceMin);
-                            y = self.math_random(self.$element.innerHeight() - 2 * distanceMin);
-                            if (x > self.waves[i].bezier_values[j - 1].x - distanceMin) {
-                                x = x + 2 * distanceMin;
-                            }
-                            if (y > self.waves[i].bezier_values[j - 1].y - distanceMin) {
-                                y = y + 2 * distanceMin;
-                            }
-                        }
-                        self.waves[i].bezier_values[j].x = x;
-                        self.waves[i].bezier_values[j].y = y;
+            key: 'get_waves',
+            value: function get_waves() {
+                var waves = [];
+                for (var i = 0; i < this.settings.waves_num; i++) {
+                    var bezier_values = [];
+                    for (var j = 0; j < this.settings.bezier_path_length; j++) {
+                        bezier_values.push({ x: 0, y: 0 });
                     }
-
-                    // self.waves[i] = {
-                    //     bezier_values: bezier_values,
-                    //     current_position: {
-                    //         x: self.math_random(self.$element.innerWidth()),
-                    //         y: self.math_random(self.$element.innerHeight())
-                    //     }
-                    // };
-
-                    self.waves[i].current_position.x = self.math_random(self.$element.innerWidth());
-                    self.waves[i].current_position.y = self.math_random(self.$element.innerHeight());
+                    var wave = { bezier_values: bezier_values, current_position: { x: 0, y: 0 } };
+                    waves.push(wave);
+                }
+                return waves;
+            }
+        }, {
+            key: 'update_waves',
+            value: function update_waves() {
+                for (var wave_index = 0; wave_index < this.settings.waves_num; wave_index++) {
+                    for (var bezier_index = 0; bezier_index < this.settings.bezier_path_length; bezier_index++) {
+                        var x = void 0,
+                            y = void 0;
+                        var attempt_count = 0;
+                        var distance = void 0;
+                        do {
+                            x = this.math_random(this.$element.innerWidth());
+                            y = this.math_random(this.$element.innerHeight());
+                            if (bezier_index === 0) break;
+                            var prev = this.waves[wave_index].bezier_values[bezier_index - 1];
+                            distance = this.get_distance(x, y, prev.x, prev.y);
+                            if (this.settings.debug && attempt_count === 9) {
+                                console.log('9 attempts to find appropriate coords');
+                            }
+                        } while (++attempt_count < 10 && distance < this.settings.bezier_control_point_distance_min);
+                        this.waves[wave_index].bezier_values[bezier_index].x = x;
+                        this.waves[wave_index].bezier_values[bezier_index].y = y;
+                    }
                 }
             }
         }, {
             key: 'run',
             value: function run() {
-                var self = this;
-
-                self.waves.forEach(function (wave, index) {
-
-                    if (typeof wave.tweenComet !== 'undefined' /*&& self.tweenComet.isActive()*/) {
-                            wave.tweenComet.kill();
-                        }
-
-                    wave.tweenComet = TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
+                this.update_waves();
+                this.update_items();
+                this.run_tween();
+            }
+        }, {
+            key: 'run_tween',
+            value: function run_tween() {
+                this.waves.forEach(function (wave) {
+                    wave.tween_comet = TweenMax.to(wave.current_position, this.settings.bezier_path_length, {
                         bezier: { values: wave.bezier_values, timeResolution: 0, type: "soft" },
                         yoyo: true,
                         repeat: -1,
-                        onUpdate: function onUpdate() {
-                            self.on_update(wave.current_position);
-                        }, ease: Linear.easeNone
+                        onUpdate: function () {
+                            this.on_update(wave.current_position);
+                        }.bind(this),
+                        ease: Linear.easeNone
                     });
-                });
+                }.bind(this));
             }
         }, {
             key: 'resize_handler',
             value: function resize_handler() {
-                var self = this;
-
                 $(window).resize(function () {
                     if (this.resizeTO) clearTimeout(this.resizeTO);
                     this.resizeTO = setTimeout(function () {
@@ -240,99 +244,34 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 });
 
                 $(window).on('resize_end', function () {
-                    self.generate_waves();
-                    self.set_waver_items_position();
-                    self.run();
-                });
-            }
-        }, {
-            key: 'math_random',
-            value: function math_random(X) {
-                return Math.random() * X;
-            }
-        }, {
-            key: 'on_update',
-            value: function on_update(position) {
-                var self = this;
-
-                self.waver_items_data.forEach(function (waver_item) {
-
-                    var a = waver_item.x - position.x;
-                    var b = waver_item.y - position.y;
-
-                    var distance = Math.sqrt(a * a + b * b);
-
-                    if (distance < self.settings.distance && !waver_item.active) {
-                        waver_item.distance = distance;
-                        waver_item.active = true;
-                        waver_item.$el.addClass('active');
-                    } else if (waver_item.active && !waver_item.wait_disappear) {
-                        waver_item.wait_disappear = true;
-
-                        setTimeout(function () {
-                            waver_item.$el.removeClass('active');
-                            waver_item.active = false;
-                            waver_item.wait_disappear = false;
-                        }, 2000 - waver_item.distance * (2000 / self.settings.distance));
-                    }
-                });
-
-                if (self.settings.debug) {
-                    self.update_debug_point();
-                }
-            }
-        }, {
-            key: 'store_waver_items',
-            value: function store_waver_items() {
-                var self = this;
-
-                self.$waver_items.each(function () {
-
-                    self.waver_items_data.push({
-                        $el: $(this)
-                    });
-                });
-            }
-        }, {
-            key: 'set_waver_items_position',
-            value: function set_waver_items_position() {
-                var self = this;
-
-                self.waver_items_data.forEach(function (item) {
-                    item.x = item.$el.position().left + item.$el.outerWidth() / 2;
-                    item.y = item.$el.position().top + item.$el.outerHeight() / 2;
-                });
+                    this.run();
+                }.bind(this));
             }
         }, {
             key: 'update_debug_point',
             value: function update_debug_point() {
-                var self = this;
-
-                this.waves.forEach(function (wave, index) {
-
+                this.waves.forEach(function (wave) {
                     TweenLite.set(wave.$debug_point, { x: wave.current_position.x, y: wave.current_position.y });
-                    // wave.$debug_point.css({'x': wave.current_position.x, 'y': wave.current_position.y});
                 });
             }
         }, {
             key: 'init_debug',
             value: function init_debug() {
                 var self = this;
-
                 this.waves.forEach(function (wave, index) {
                     wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
-
                     self.$element.append(wave.$debug_point);
                 });
-
-                //self let example
-                // console.log('self let example');
-                // console.log(this);
-                //
-                // setTimeout(function(){
-                //     console.log(this);
-                //     console.log(self);
-                // }, 1000)
+            }
+        }], [{
+            key: 'get_distance',
+            value: function get_distance(x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            }
+        }, {
+            key: 'math_random',
+            value: function math_random(X) {
+                return Math.random() * X;
             }
         }]);
 
@@ -347,8 +286,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             i = void 0,
             ret = void 0;
         for (i = 0; i < length; i++) {
-            if ((typeof opt === 'undefined' ? 'undefined' : _typeof(opt)) == 'object' || typeof opt == 'undefined') $this[i].waver = new Waver($this[i], opt);else ret = $this[i].waver[opt].apply($this[i].waver, args);
-            if (typeof ret != 'undefined') return ret;
+            if ((typeof opt === 'undefined' ? 'undefined' : _typeof(opt)) === 'object' || typeof opt === 'undefined') $this[i].waver = new Waver($this[i], opt);else ret = $this[i].waver[opt].apply($this[i].waver, args);
+            if (typeof ret !== 'undefined') return ret;
         }
         return $this;
     };
