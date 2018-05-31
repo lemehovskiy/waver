@@ -235,11 +235,42 @@ section {
   background: white;
 }
 
-.GSAP {
-  height: 30px;
-  width: 30px;
-  background: green;
-  position: absolute;
+.section-intro-2 {
+  position: relative;
+  min-height: 100vh;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: white;
+}
+
+.section-intro-2 .waver-demo-2 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.section-intro-2 .waver-item {
+  width: 20px;
+  height: 20px;
+  margin: 20px 10px 0;
+  background: rgba(255, 255, 255, 0.4);
+  -webkit-transition: .5s;
+  -o-transition: .5s;
+  transition: .5s;
+}
+
+.section-intro-2 .waver-item.active {
+  background: white;
 }
 
 

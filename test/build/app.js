@@ -7080,6 +7080,16 @@ $(document).ready(function () {
     }
 
     $('.waver-demo').waver({
+        distance: 200,
+        waves_num: 2
+
+    });
+
+    for (var _i = 0; _i < 789; _i++) {
+        $('.waver-demo-2').append('<div class="waver-item"></div>');
+    }
+
+    $('.waver-demo-2').waver({
         distance: 200
 
     });
@@ -12143,7 +12153,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             //extend by function call
             this.settings = $.extend(true, {
                 debug: false,
-                waves_num: 2,
+                waves_num: 1,
                 bezier_path_length: 20,
                 distance: 100,
                 bezier_control_point_distance_min: 200

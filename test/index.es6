@@ -13,6 +13,16 @@ $(document).ready(function () {
     }
 
     $('.waver-demo').waver({
+        distance: 200,
+        waves_num: 2
+
+    });
+
+    for (let i = 0; i < 789; i++) {
+        $('.waver-demo-2').append('<div class="waver-item"></div>')
+    }
+
+    $('.waver-demo-2').waver({
         distance: 200
 
     });

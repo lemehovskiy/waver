@@ -20,7 +20,7 @@
     max-width: 1000px;
   }
 
-  .waver-demo {
+  .waver-demo{
     display: flex;
     flex-wrap: wrap;
     background: rgba(186, 186, 186, 0.42);
@@ -40,9 +40,31 @@
   }
 }
 
-.GSAP {
-  height: 30px;
-  width: 30px;
-  background: green;
-  position: absolute;
+
+.section-intro-2 {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+
+
+  .waver-demo-2 {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .waver-item {
+    width: 20px;
+    height: 20px;
+    margin: 20px 10px 0;
+    background: rgba(255, 255, 255, 0.4);
+    transition: .5s;
+
+    &.active {
+      background: rgba(255, 255, 255, 1);
+    }
+  }
 }

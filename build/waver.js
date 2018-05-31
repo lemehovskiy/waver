@@ -101,7 +101,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             //extend by function call
             this.settings = $.extend(true, {
                 debug: false,
-                waves_num: 2,
+                waves_num: 1,
                 bezier_path_length: 20,
                 distance: 100,
                 bezier_control_point_distance_min: 200
