@@ -12148,8 +12148,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 debug: false,
                 waves_num: 1,
                 bezier_path_length: 2,
-                distance: 100
-
+                distance: 100,
+                bezierControlPointDistanceMin: 200
             }, options);
 
             self.$element = $(element);
@@ -12198,6 +12198,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 self.resize_handler();
             }
         }, {
+            key: 'getDistance',
+            value: function getDistance(x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            }
+        }, {
             key: 'generate_waves',
             value: function generate_waves() {
                 var self = this;
@@ -12215,8 +12220,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                         //     x: self.math_random(self.$element.innerWidth()),
                         //     y: self.math_random(self.$element.innerHeight())
                         // });
-                        self.waves[i].bezier_values[j].x = self.math_random(self.$element.innerWidth());
-                        self.waves[i].bezier_values[j].y = self.math_random(self.$element.innerHeight());
+                        var distanceMin = this.settings.bezierControlPointDistanceMin;
+                        var x = self.math_random(self.$element.innerWidth());
+                        var y = self.math_random(self.$element.innerHeight());
+                        if (j > 0) {
+                            x = self.math_random(self.$element.innerWidth() - 2 * distanceMin);
+                            y = self.math_random(self.$element.innerHeight() - 2 * distanceMin);
+                            if (x > self.waves[i].bezier_values[j - 1].x - distanceMin) {
+                                x = x + 2 * distanceMin;
+                            }
+                            if (y > self.waves[i].bezier_values[j - 1].y - distanceMin) {
+                                y = y + 2 * distanceMin;
+                            }
+                        }
+                        self.waves[i].bezier_values[j].x = x;
+                        self.waves[i].bezier_values[j].y = y;
                     }
 
                     // self.waves[i] = {

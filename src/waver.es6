@@ -20,8 +20,8 @@
                 debug: false,
                 waves_num: 1,
                 bezier_path_length: 2,
-                distance: 100
-
+                distance: 100,
+                bezierControlPointDistanceMin: 200
             }, options);
 
             self.$element = $(element);
@@ -71,6 +71,10 @@
 
         }
 
+        getDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+        }
+
         generate_waves() {
             let self = this;
 
@@ -87,10 +91,21 @@
                     //     x: self.math_random(self.$element.innerWidth()),
                     //     y: self.math_random(self.$element.innerHeight())
                     // });
-                    self.waves[i].bezier_values[j].x = self.math_random(self.$element.innerWidth());
-                    self.waves[i].bezier_values[j].y = self.math_random(self.$element.innerHeight());
-
-
+                    let distanceMin = this.settings.bezierControlPointDistanceMin;
+                    let x = self.math_random(self.$element.innerWidth());
+                    let y = self.math_random(self.$element.innerHeight());
+                    if (j > 0) {
+                        x = self.math_random(self.$element.innerWidth() - 2 * distanceMin);
+                        y = self.math_random(self.$element.innerHeight() - 2 * distanceMin);
+                        if (x > self.waves[i].bezier_values[j - 1].x - distanceMin) {
+                            x = x + 2 * distanceMin;
+                        }
+                        if (y > self.waves[i].bezier_values[j - 1].y - distanceMin) {
+                            y = y + 2 * distanceMin;
+                        }
+                    }
+                    self.waves[i].bezier_values[j].x = x;
+                    self.waves[i].bezier_values[j].y = y;
                 }
 
                 // self.waves[i] = {
