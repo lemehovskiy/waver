@@ -13,8 +13,7 @@ $(document).ready(function () {
     }
 
     $('.waver-demo').waver({
-        distance: 200,
-        debug: true
+        distance: 200
 
     });
 
