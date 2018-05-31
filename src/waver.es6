@@ -90,22 +90,26 @@
                 for (let j = 0; j < this.settings.bezier_path_length; j++) {
                     bezier_values.push({x:0, y:0})
                 }
-                let wave = {bezier_values: bezier_values, current_position: {x:0, y:0}};
+                let wave = {
+                    bezier_values: bezier_values,
+                    current_position: {x:this.math_random(this.$element.innerWidth()), y:this.math_random(this.$element.innerHeight())}
+                };
                 waves.push(wave);
             }
             return waves;
         }
 
-        static get_distance(x1, y1, x2, y2) {
+        get_distance(x1, y1, x2, y2) {
             return Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
         }
 
         update_waves() {
             for (let wave_index = 0; wave_index < this.settings.waves_num; wave_index++) {
                 for (let bezier_index = 0; bezier_index < this.settings.bezier_path_length; bezier_index++) {
-                    let x, y;
-                    let attempt_count = 0;
-                    let distance;
+                    let x = 0,
+                        y = 0,
+                        attempt_count = 0,
+                        distance;
                     do {
                         x = this.math_random(this.$element.innerWidth());
                         y = this.math_random(this.$element.innerHeight());
@@ -115,7 +119,10 @@
                         if (this.settings.debug && attempt_count === 9) {
                             console.log('9 attempts to find appropriate coords');
                         }
-                    } while (++attempt_count < 10 && distance < this.settings.bezier_control_point_distance_min) ;
+                    }
+
+                    while (++attempt_count < 10 && distance < this.settings.bezier_control_point_distance_min) ;
+
                     this.waves[wave_index].bezier_values[bezier_index].x = x;
                     this.waves[wave_index].bezier_values[bezier_index].y = y;
                 }
@@ -155,7 +162,7 @@
             }.bind(this))
         }
 
-        static math_random(X) {
+        math_random(X) {
             return Math.random() * X
         }
 

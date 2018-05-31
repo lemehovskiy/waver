@@ -182,20 +182,28 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     for (var j = 0; j < this.settings.bezier_path_length; j++) {
                         bezier_values.push({ x: 0, y: 0 });
                     }
-                    var wave = { bezier_values: bezier_values, current_position: { x: 0, y: 0 } };
+                    var wave = {
+                        bezier_values: bezier_values,
+                        current_position: { x: this.math_random(this.$element.innerWidth()), y: this.math_random(this.$element.innerHeight()) }
+                    };
                     waves.push(wave);
                 }
                 return waves;
+            }
+        }, {
+            key: 'get_distance',
+            value: function get_distance(x1, y1, x2, y2) {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
             }
         }, {
             key: 'update_waves',
             value: function update_waves() {
                 for (var wave_index = 0; wave_index < this.settings.waves_num; wave_index++) {
                     for (var bezier_index = 0; bezier_index < this.settings.bezier_path_length; bezier_index++) {
-                        var x = void 0,
-                            y = void 0;
-                        var attempt_count = 0;
-                        var distance = void 0;
+                        var x = 0,
+                            y = 0,
+                            attempt_count = 0,
+                            distance = void 0;
                         do {
                             x = this.math_random(this.$element.innerWidth());
                             y = this.math_random(this.$element.innerHeight());
@@ -206,6 +214,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                 console.log('9 attempts to find appropriate coords');
                             }
                         } while (++attempt_count < 10 && distance < this.settings.bezier_control_point_distance_min);
+
                         this.waves[wave_index].bezier_values[bezier_index].x = x;
                         this.waves[wave_index].bezier_values[bezier_index].y = y;
                     }
@@ -248,6 +257,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 }.bind(this));
             }
         }, {
+            key: 'math_random',
+            value: function math_random(X) {
+                return Math.random() * X;
+            }
+        }, {
             key: 'update_debug_point',
             value: function update_debug_point() {
                 this.waves.forEach(function (wave) {
@@ -262,16 +276,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     wave.$debug_point = $('<div class="waver-debug-point waver-debug-point-' + index + '" style="background: red; width: 20px; height: 20px; position: absolute;"></div>');
                     self.$element.append(wave.$debug_point);
                 });
-            }
-        }], [{
-            key: 'get_distance',
-            value: function get_distance(x1, y1, x2, y2) {
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-            }
-        }, {
-            key: 'math_random',
-            value: function math_random(X) {
-                return Math.random() * X;
             }
         }]);
 
