@@ -113,7 +113,11 @@
 
             self.waves.forEach(function (wave, index) {
 
-                TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
+                if (typeof self.tweenComet !== 'undefined' /*&& self.tweenComet.isActive()*/) {
+                    self.tweenComet.kill();
+                }
+
+                self.tweenComet = TweenMax.to(wave.current_position, self.settings.bezier_path_length, {
                     bezier: {values: wave.bezier_values, timeResolution: 0, type: "soft"},
                     yoyo: true,
                     repeat: -1,
@@ -137,6 +141,7 @@
             $(window).on('resize_end', function () {
                 self.generate_waves();
                 self.set_waver_items_position();
+                self.run();
             })
         }
 
